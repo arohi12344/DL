@@ -1,0 +1,212 @@
+# import required libraries
+import pandas as pd
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# read the csv file 
+Data = pd.read_csv('kc_house_data.csv')
+
+Data.head(5).T
+
+#get some information about our DataSet
+Data.info()
+Data.describe().transpose()
+
+# let's drop unnecessory featurs
+Data = Data.drop('id',axis=1)
+Data = Data.drop('zipcode',axis=1)
+
+# check if there are any Null values
+Data.isnull().sum()
+
+#visualizing house prices
+fig = plt.figure(figsize=(10,7))
+fig.add_subplot(2,1,1)
+sns.distplot(Data['price'])
+fig.add_subplot(2,1,2)
+sns.boxplot(Data['price'])
+plt.tight_layout()
+
+#visualizing house prices
+fig = plt.figure(figsize=(10,7))
+fig.add_subplot(2,1,1)
+sns.distplot(Data['price'])
+fig.add_subplot(2,1,2)
+sns.boxplot(Data['price'])
+plt.tight_layout()
+
+#visualizing square footage of (home,lot,above and basement)
+fig = plt.figure(figsize=(16,5))
+fig.add_subplot(2,2,1)
+sns.scatterplot(Data['sqft_above'], Data['price'])
+fig.add_subplot(2,2,2)
+sns.scatterplot(Data['sqft_lot'],Data['price'])
+fig.add_subplot(2,2,3)
+sns.scatterplot(Data['sqft_living'],Data['price'])
+fig.add_subplot(2,2,4)
+sns.scatterplot(Data['sqft_basement'],Data['price'])
+
+# check correlation
+Data.corr()['price'].sort_values(ascending=False)
+
+# feature with higher correlation
+plt.figure(figsize=(12,8))
+sns.scatterplot(x='price',y='sqft_living',data=Data)
+
+# feature like number of bedroom or bathroom
+plt.figure(figsize = (10,8))
+sns.boxplot(x = 'bedrooms',y = 'price', data = Data)
+
+plt.figure(figsize=(15,10))
+sns.scatterplot(x='long',y='lat',data=Data,hue='price')
+
+#let's clean it the map a bit - we are taking 99% bottom price houses
+non_top_1_perc = Data.sort_values('price',ascending = False).iloc[216:]
+
+len(Data)*0.01
+
+# let's try this one again
+plt.figure(figsize=(15,10))
+sns.scatterplot(x='long',y='lat',data=non_top_1_perc,alpha = 0.8,palette = 'RdYlGn', hue='price')
+
+#let's break date to years, months
+Data['date'] = pd.to_datetime(Data['date'])
+Data['month'] = Data['date'].apply(lambda date:date.month)
+Data['year'] = Data['date'].apply(lambda date:date.year)
+Data.head(5)
+
+# data visualization house price vs months and years
+fig = plt.figure(figsize=(16,5))
+fig.add_subplot(1,2,1)
+Data.groupby('month').mean()['price'].plot()
+fig.add_subplot(1,2,2)
+Data.groupby('year').mean()['price'].plot()
+
+Data = Data.drop('date',axis=1)
+
+Scaling and Train Test Split
+X = Data.drop('price',axis =1).values
+y = Data['price'].values
+
+#splitting Train and Test 
+from sklearn.model_selection import train_test_split
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=101)
+
+Feature Scalling
+#standardization scaler - fit&transform on train, fit only on test
+from sklearn.preprocessing import StandardScaler
+s_scaler = StandardScaler()
+X_train = s_scaler.fit_transform(X_train.astype(np.float))
+X_test = s_scaler.transform(X_test.astype(np.float))
+
+Method1: Multiple Linear Regression
+#Liner Regression
+from sklearn.linear_model import LinearRegression
+regressor = LinearRegression()  
+regressor.fit(X_train, y_train)
+
+#evaluate the model (intercept and slope)
+regressor.intercept_
+regressor.coef_
+
+y_predd = regressor.predict(X_test)
+df = pd.DataFrame({'Actual': y_test, 'Predicted': y_predd})
+df1 = df.head(10)
+df1
+
+fig = plt.figure(figsize=(10,5))
+residuals = (y_test- y_pred)
+sns.distplot(residuals)
+
+from sklearn import metrics
+
+print('Mean Absolute Error: {:.2f}'.format(metrics.mean_absolute_error(y_test, y_predd))) 
+print('Mean Squared Error:{:.2f}'.format(metrics.mean_squared_error(y_test, y_predd)))  
+print('Root Mean Squared Error:{:.2f}'.format(np.sqrt(metrics.mean_squared_error(y_test, y_predd))))
+print('Variance score is: {:.2f}'.format(metrics.explained_variance_score(y_test,y_predd)))
+
+# we are off about 20% (comparing mean absolut error and mean of price)
+Data['price'].mean()
+
+print('Linear Regression Model:')
+print("Train Score {:.2f}".format(regressor.score(X_train,y_train)))
+print("Test Score {:.2f}".format(regressor.score(X_test, y_test)))
+
+Method2: Keras Regression
+# Creating a Neural Network Model
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, Activation
+from tensorflow.keras.optimizers import Adam
+
+# having 19 nueron is based on the number of available featurs
+
+model = Sequential()
+
+model.add(Dense(19,activation='relu'))
+model.add(Dense(19,activation='relu'))
+model.add(Dense(19,activation='relu'))
+model.add(Dense(19,activation='relu'))
+model.add(Dense(1))
+
+model.compile(optimizer='adam',loss='mse')
+
+Training the Model
+model.fit(x=X_train,y=y_train,
+          validation_data=(X_test,y_test),
+          batch_size=128,epochs=400)
+
+loss_df = pd.DataFrame(model.history.history)
+loss_df.plot(figsize=(12,8))
+
+Evaluation on Test Data
+y_pred = model.predict(X_test)
+
+# evaluation metrics
+# explained variance score: best possible score is 1 and lower values are worse
+from sklearn import metrics
+
+print('Mean Absolute Error: {:.2f}'.format(metrics.mean_absolute_error(y_test, y_pred)))
+print('Mean Squared Error: {:.2f}'.format(metrics.mean_squared_error(y_test, y_pred)))
+print('Root Mean Squared Error: {:.2f}'.format(np.sqrt(metrics.mean_squared_error(y_test, y_pred))))
+print('Variance score is: {:.2f}'.format(metrics.explained_variance_score(y_test,y_pred)))
+
+# we are off about 20% (comparing mean absolut error and mean of price)
+Data['price'].mean()
+
+# Our predictions
+fig = plt.figure(figsize=(10,5))
+plt.scatter(y_test,y_pred)
+# Perfect predictions
+plt.plot(y_test,y_test,'r')
+
+fig = plt.figure(figsize=(10,5))
+residuals = (y_test- y_pred)
+sns.distplot(residuals)
+
+How we can use the model!
+# let's drop price and keep first line featurs, then put those featur inside the model and estimae the price!
+single_house = Data.drop('price',axis = 1).iloc[0]
+
+# need to apply featur scalling on those featurs
+single_house = s_scaler.transform(single_house.values.reshape(-1,19))
+
+# apply model on those featurs
+model.predict(single_house)
+
+# compare the prediction with real price for the first column
+Data['price'][0]
+
+Multiple Linear Regression vs Keras Regression
+print('Model: Keras Regression\n')
+
+print('Mean Absolute Error(MAE): {:.2f}'.format(metrics.mean_absolute_error(y_test, y_pred)))
+print('Mean Squared Error(MSE): {:.2f}'.format(metrics.mean_squared_error(y_test, y_pred)))
+print('Root Mean Squared Error(RMSE): {:.2f}'.format(np.sqrt(metrics.mean_squared_error(y_test, y_pred))))
+print('Variance score: {:.2f}\n'.format(metrics.explained_variance_score(y_test,y_pred)*100))
+print('*********************************\n')
+print('Model: Multiple Linear Regression\n')
+print('Mean Absolute Error(MAE): {:.2f}'.format(metrics.mean_absolute_error(y_test, y_predd))) 
+print('Mean Squared Error(MSE):{:.2f}'.format(metrics.mean_squared_error(y_test, y_predd)))  
+print('Root Mean Squared Error(RMSE):{:.2f}'.format(np.sqrt(metrics.mean_squared_error(y_test, y_predd))))
+print('Variance score: {:.2f}'.format(metrics.explained_variance_score(y_test,y_predd)*100))
