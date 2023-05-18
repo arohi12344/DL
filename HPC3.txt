@@ -1,0 +1,200 @@
+Implement parallel reduction using Min, Max, Sum and Average Operations.
+Minimum
+Maximum
+Sum
+Average
+Objective: To study and implementation of directive based parallel programming model.
+Outcome: Students will be understand the implementation of sequential program
+augmented with compiler directives to specify parallelism.
+
+Pre-requisites:
+64-bit Open source Linux or its derivative
+Programming Languages: C/C++
+Theory:
+OpenMP:
+[https://www.geeksforgeeks.org/openmp-introduction-with-installation-guide/]
+[https://www.geeksforgeeks.org/openmp-hello-world-program/]
+OpenMP is a set of C/C++ pragmas (or FORTRAN equivalents) which provide the
+programmer a high-level front-end interface which get translated as calls to threads (or other
+similar entities). The key phrase here is &quot;higher-level&quot;; the goal is to better enable the
+programmer to &quot;think parallel,&quot; alleviating him/her of the burden and distraction of dealing
+with setting up and coordinating threads. For example, the OpenMP directive.
+OpenMP Core Syntax:
+
+Most of the constructs in OpenMP are compiler directives:
+#pragma omp construct [clause [clause]...]
+Example
+
+Laboratory Practice – I BE (Comp Engg)
+
+[Type here]
+#pragma omp parallel num_threads(4)
+Function prototypes and types in the file:
+#include &lt;omp.h&gt;
+Most OpenMP constructs apply to a “structured block”
+Structured block:
+a block of one or more statements surrounded by “{ }”, with one point of entry at the
+top and one point of exit at the bottom.
+Following is the sample code which illustrates max operator usage in OpenMP :
+#include &lt;stdio.h&gt;
+#include &lt;omp.h&gt; ;
+int main()
+{
+double arr[10];
+omp_set_num_threads(4); ;;
+double max_val=0.0;
+int i;
+for( i=0; i&lt;10; i++)
+arr[i] = 2.0 + i;
+#pragma omp parallel for reduction(max : max_val) ;;
+for( i=0;i&lt;10; i++)
+{
+printf(&quot;thread id = %d and i = %d&quot;, omp_get_thread_num(), i);
+if(arr[i] &gt; max_val)
+{
+max_val = arr[i];
+}
+}
+printf(&quot;\nmax_val = %f&quot;, max_val);
+}
+Following is the sample code which illustrates min operator usage in OpenMP :
+#include &lt;stdio.h&gt;
+#include &lt;omp.h&gt;
+int main()
+{
+double arr[10];
+omp_set_num_threads(4);
+double min_val=0.0;
+int i;
+for( i=0; i&lt;10; i++)
+arr[i] = 2.0 + i;
+
+Laboratory Practice – I BE (Comp Engg)
+
+[Type here]
+#pragma omp parallel for reduction(min : min_val)
+for( i=0;i&lt;10; i++)
+{
+printf(&quot;thread id = %d and i = %d&quot;, omp_get_thread_num(), i);
+if(arr[i] &lt; min_val)
+{
+min_val = arr[i];
+}
+}
+printf(&quot;\nmin_val = %f&quot;, min_val);
+}
+Following is the sample code which illustrates sum operation usage in OpenMP :
+
+#include &lt;omp.h&gt;
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+int main (int argc, char *argv[])
+{
+int i, n;
+float a[100], b[100], sum;
+/* Some initializations */
+n = 100;
+for (i=0; i &lt; n; i++)
+a[i] = b[i] = i * 1.0;
+sum = 0.0;
+
+#pragma omp parallel for reduction(+:sum)
+for (i=0; i &lt; n; i++)
+sum = sum + (a[i] * b[i]);
+printf(&quot; Sum = %f\n&quot;,sum);
+}
+Following is the sample code which illustrates sum operation usage in OpenMP :
+
+Laboratory Practice – I BE (Comp Engg)
+
+[Type here]
+Conclusion: We have implemented parallel reduction using Min, Max, Sum and
+Average Operations.
+
+
+#include <iostream>
+#include <omp.h>
+#include <ctime>
+#include <cstdlib>
+
+using namespace std;
+
+void min(int *arr, int n)
+{
+   double min_val = 10000;
+   int i;
+   cout << endl;
+#pragma omp parallel for reduction(min : min_val)
+   for (i = 0; i < n; i++)
+   {
+      cout << "\nthread id = " << omp_get_thread_num() << " and i = " << i;
+      if (arr[i] < min_val)
+      {
+         min_val = arr[i];
+      }
+   }
+   cout << "\n\nmin_val = " << min_val << endl;
+}
+
+void max(int *arr, int n)
+{
+   double max_val = 0.0;
+   int i;
+
+#pragma omp parallel for reduction(max : max_val)
+   for (i = 0; i < n; i++)
+   {
+      cout << "\nthread id = " << omp_get_thread_num() << " and i = " << i;
+      if (arr[i] > max_val)
+      {
+         max_val = arr[i];
+      }
+   }
+   cout << "\n\nmax_val = " << max_val << endl;
+}
+
+void avg(int *arr, int n)
+{
+   int i;
+   float avg = 0, sum = 0;
+#pragma omp parallel reduction(+:sum)
+   {
+      int id = omp_get_thread_num();
+#pragma omp for
+      for (i = 0; i < n; i++)
+      {
+         sum = sum + arr[i];
+         cout << "\nFor i = " << i << ", thread " << id << " is executing";
+      }
+   }
+   cout << "\n\nSum = " << sum << endl;
+   avg = sum / n;
+   cout << "\nAverage = " << avg << endl;
+}
+
+int main()
+{
+   omp_set_num_threads(4);
+   int n, i;
+
+   cout << "Enter the number of elements in the array: ";
+   cin >> n;
+   int arr[n];
+
+   srand(time(0));
+   for (int i = 0; i < n; ++i)
+   {
+      arr[i] = rand() % 100;
+   }
+
+   cout << "\nArray elements are: ";
+   for (i = 0; i < n; i++)
+   {
+      cout << arr[i] << ",";
+   }
+
+   min(arr, n);
+   max(arr, n);
+   avg(arr, n);
+   return 0;
+}
