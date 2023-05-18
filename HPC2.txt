@@ -1,0 +1,352 @@
+Title: For Bubble Sort and Merger Sort, based on existing sequential algorithms, design and
+implement parallel algorithm utilizing all resources available.
+Aim: Understand Parallel Sorting Algorithms like Bubble sort and Merge Sort.
+Prerequisites:
+ Student should know basic concepts of Bubble sort and Merge Sort.
+Objective: Study of Parallel Sorting Algorithms like Bubble sort and Merge Sort
+Theory:
+i) What is Sorting?
+Sorting is a process of arranging elements in a group in a particular order, i.e., ascending
+order, descending order, alphabetic order, etc.
+Characteristics of Sorting are:
+• Arrange elements of a list into certain order
+• Make data become easier to access
+• Speed up other operations such as searching and merging. Many sorting algorithms
+with different time and space complexities
+
+ii) What is Parallel Sorting?
+A sequential sorting algorithm may not be efficient enough when we have to sort a huge
+volume of data. Therefore, parallel algorithms are used in sorting.
+Design methodology:
+• Based on an existing sequential sort algorithm
+– Try to utilize all resources available
+– Possible to turn a poor sequential algorithm into a reasonable parallel
+algorithm (bubble sort and parallel bubble sort)
+
+• Completely new approach
+– New algorithm from scratch
+– Harder to develop
+– Sometimes yield better solution
+
+Bubble Sort
+The idea of bubble sort is to compare two adjacent elements. If they are not in the
+right order,switch them. Do this comparing and switching (if necessary) until the end of the
+array is reached. Repeat this process from the beginning of the array n times.
+• One of the straight-forward sorting methods
+– Cycles through the list
+– Compares consecutive elements and swaps them if necessary
+– Stops when no more out of order pair
+• Slow &amp; inefficient
+• Average performance is O(n 2 )
+Bubble Sort Example
+Here we want to sort an array containing [8, 5, 1]. The following figure shows how
+we can sortthis array using bubble sort. The elements in consideration are shown in bold.
+
+8, 5, 1 Switch 8 and 5
+5, 8, 1 Switch 8 and 1
+5, 1, 8 Reached end start again.
+5, 1, 8 Switch 5 and 1
+1, 5, 8 No Switch for 5 and 8
+1, 5, 8 Reached end start again.
+1, 5, 8 No switch for 1, 5
+1, 5, 8 No switch for 5, 8
+1, 5, 8 Reached end.
+
+But do not start again since this is the nth iteration of same process
+Parallel Bubble Sort
+ Implemented as a pipeline.
+ Let local_size = n / no_proc. We divide the array in no_proc parts, and each process
+executes the bubble sort on its part, including comparing the last element with the
+first one belonging to the next thread.
+ Implement with the loop (instead of j&lt;i)
+  for (j=0; j&lt;n-1; j++)
+ For every iteration of i, each thread needs to wait until the previous thread has
+finished that iteration before starting.
+ We&#39;ll coordinate using a barrier.
+Algorithm for Parallel Bubble Sort
+1. For k = 0 to n-2
+2. If k is even then
+3.     for i = 0 to (n/2)-1 do in parallel
+4.         If A[2i] &gt; A[2i+1] then
+5.             Exchange A[2i] ↔ A[2i+1]
+6. Else
+7.     for i = 0 to (n/2)-2 do in parallel
+8.         If A[2i+1] &gt; A[2i+2] then
+9.             Exchange A[2i+1] ↔ A[2i+2]
+10. Next k
+Parallel Bubble Sort Example 1
+• Compare all pairs in the list in parallel
+• Alternate between odd and even phases
+• Shared flag, sorted, initialized to true at beginning of each iteration (2 phases), if any
+processor perform swap, sorted = false
+
+Parallel Bubble Sort Example 2
+• How many steps does it take to sort the following sequence from least to greatest
+using the Parallel Bubble Sort? How does the sequence look like after 2 cycles?
+• Ex: 4,3,1,2
+Merge Sort
+• Collects sorted list onto one processor
+• Merges elements as they come together
+• Simple tree structure
+• Parallelism is limited when near the root
+
+Theory:
+To sort A[p .. r]:
+1. Divide Step
+If a given array A has zero or one element, simply return; it is already sorted. Otherwise,
+splitA[p .. r] into two subarraysA[p .. q] and A[q + 1 .. r], each containing about half of the
+elements of A[p .. r]. That is, q is the halfway point of A[p .. r].
+2. Conquer Step
+Conquer by recursively sorting the two subarraysA[p .. q] and A[q + 1 .. r].
+3. Combine Step
+Combine the elements back in A[p .. r] by merging the two sorted subarraysA[p .. q] and
+A[q + 1 .. r] into a sorted sequence. To accomplish this step, we will define a procedure
+MERGE (A, p, q, r).
+
+Example:
+Parallel Merge Sort
+• Parallelize processing of sub-problems
+• Max parallelization achived with one processor per node (at each layer/height)
+Parallel Merge Sort Example
+• Perform Merge Sort on the following list of elements. Given 2 processors, P0 &amp; P1,
+which processor is reponsible for which comparison?
+• 4,3,2,1
+Algorithm for Parallel Merge Sort
+1. Procedure parallelMergeSort
+2. Begin
+3. Create processors Pi where i = 1 to n
+4. if i &gt; 0 then recieve size and parent from the root
+5. recieve the list, size and parent from the root
+6. endif
+7. midvalue= listsize/2
+8. if both children is present in the tree then
+9. send midvalue, first child
+10. send listsize-mid,second child
+11. send list, midvalue, first child
+12. send list from midvalue, listsize-midvalue, second child
+13. call mergelist(list,0,midvalue,list, midvalue+1,listsize,temp,0,listsize)
+14. store temp in another array list2
+15. else
+16. call parallelMergeSort(list,0,listsize)
+17. endif
+18. if i &gt;0 then
+19. send list, listsize,parent
+20. endif
+21. end
+
+INPUT:
+1. Array of integer numbers.
+OUTPUT:
+1. Sorted array of numbers
+FAQ
+1. What is sorting?
+2. What is parallel sort?
+3. How to sort the element using Bubble Sort?
+4. How to sort the element using Parallel Bubble Sort?
+
+Laboratory Practice – I BE (Comp Engg)
+
+[Type here]
+5. How to sort the element using Parallel Merge Sort?
+6. How to sort the element using Merge Sort?
+7. What is searching?
+8. Different types of searching methods.
+9. Time complexities of sorting and searching methods.
+10. How to calculate time complexity?
+11. What are space complexity of all sorting and searching methods?
+12. Explain what is best, worst and average case for each method of searching and
+sorting.
+ALGORITHM ANALYSIS
+1. Time Complexity Of parallel Merge Sort and parallel Bubble sort in best case is(
+when all data is already in sorted form):O(n)
+2. Time Complexity Of parallel Merge Sort and parallel Bubble sort in worst case is:
+O(n logn)
+3. Time Complexity Of parallel Merge Sort and parallel Bubble sort in average case is:
+O(n logn)
+APPLICATIONS
+1. Representing Linear data structure &amp; Sequential data organization : structure &amp; files
+2. For Sorting sequential data structure
+CONCLUSION
+Thus, we have studied Parallel Bubble and Parallel Merge sort implementation.
+
+#include <iostream>
+#include <ctime>
+#include <cstdlib>
+#include <omp.h>
+
+using namespace std;
+
+void bubbleSort(int arr[], int n)
+{
+    for (int i = 0; i < n - 1; ++i)
+    {
+        for (int j = 0; j < n - i - 1; ++j)
+        {
+            if (arr[j] > arr[j + 1])
+            {
+                swap(arr[j], arr[j + 1]);
+            }
+        }
+    }
+}
+
+void merge(int arr[], int l, int m, int r)
+{
+    int i, j, k;
+    int n1 = m - l + 1;
+    int n2 = r - m;
+
+    int *L = new int[n1];
+    int *R = new int[n2];
+
+    for (i = 0; i < n1; ++i)
+    {
+        L[i] = arr[l + i];
+    }
+    for (j = 0; j < n2; ++j)
+    {
+        R[j] = arr[m + 1 + j];
+    }
+
+    i = 0;
+    j = 0;
+    k = l;
+
+    while (i < n1 && j < n2)
+    {
+        if (L[i] <= R[j])
+        {
+            arr[k] = L[i];
+            ++i;
+        }
+        else
+        {
+            arr[k] = R[j];
+            ++j;
+        }
+        ++k;
+    }
+
+    while (i < n1)
+    {
+        arr[k] = L[i];
+        ++i;
+        ++k;
+    }
+
+    while (j < n2)
+    {
+        arr[k] = R[j];
+        ++j;
+        ++k;
+    }
+
+    delete[] L;
+    delete[] R;
+}
+
+void mergeSort(int arr[], int l, int r)
+{
+    if (l < r)
+    {
+        int m = l + (r - l) / 2;
+        #pragma omp parallel sections
+        {
+            #pragma omp section
+            {
+                mergeSort(arr, l, m);
+            }
+            #pragma omp section
+            {
+                mergeSort(arr, m + 1, r);
+            }
+        }
+
+        merge(arr, l, m, r);
+    }
+}
+
+void printArray(int arr[], int size)
+{
+    for (int i = 0; i < size; ++i)
+    {
+        cout << arr[i] << " ";
+    }
+    cout << endl;
+}
+
+int main()
+{
+    int n;
+    cout << "Enter the size of the array: ";
+    cin >> n;
+
+    int *arr = new int[n];
+    srand(time(0));
+    for (int i = 0; i < n; ++i)
+    {
+        arr[i] = rand() % 100;
+    }
+
+    // cout << "Original array: ";
+    // printArray(arr, n);
+
+    // Sequential Bubble Sort
+    clock_t start = clock();
+    bubbleSort(arr, n);
+    clock_t end = clock();
+
+    // cout << "Sequential Bubble Sorted array: ";
+    // printArray(arr, n);
+
+    double sequentialBubbleTime = double(end - start) / CLOCKS_PER_SEC;
+
+    // Parallel Bubble Sort
+    start = clock();
+    #pragma omp parallel
+    {
+        bubbleSort(arr, n);
+    }
+    end = clock();
+
+    // cout << "Parallel Bubble Sorted array: ";
+    // printArray(arr, n);
+
+    double parallelBubbleTime = double(end - start) / CLOCKS_PER_SEC;
+
+    // Merge Sort
+    start = clock();
+    mergeSort(arr, 0, n - 1);
+    end = clock();
+
+    // cout << "Sequential Merge Sorted array: ";
+    // printArray(arr, n);
+
+    double sequentialMergeTime = double(end - start) / CLOCKS_PER_SEC;
+
+    // Parallel Merge Sort
+    start = clock();
+    #pragma omp parallel
+    {
+        #pragma omp single
+        {
+            mergeSort(arr, 0, n - 1);
+        }
+    }
+    end = clock();
+
+    // cout << "Parallel Merge Sorted array: ";
+    // printArray(arr, n);
+
+    double parallelMergeTime = double(end - start) / CLOCKS_PER_SEC;
+
+    // Performance measurement
+    cout << "Sequential Bubble Sort Time: " << sequentialBubbleTime << " seconds" << endl;
+    cout << "Parallel Bubble Sort Time: " << parallelBubbleTime << " seconds" << endl;
+    cout << "Sequential Merge Sort Time: " << sequentialMergeTime << " seconds" << endl;
+    cout << "Parallel Merge Sort Time: " << parallelMergeTime << " seconds" << endl;
+
+    delete[] arr;
+
+    return 0;
+}
