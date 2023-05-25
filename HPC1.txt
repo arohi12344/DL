@@ -119,4 +119,25 @@ int main() {
     cout << endl;
 
     return 0;
+    
+    // Create a graph with 7 vertices
+    Graph graph(7);
+
+    // Add edges between vertices
+    graph.addEdge(0, 1);
+    graph.addEdge(0, 2);
+    graph.addEdge(1, 3);
+    graph.addEdge(1, 4);
+    graph.addEdge(2, 5);
+    graph.addEdge(2, 6);
+
+    cout << "Breadth First Search (BFS): ";
+    graph.bfs(0);
+    cout << endl;
+
+    cout << "Depth First Search (DFS): ";
+    graph.dfs(0);
+    cout << endl;
+
+    return 0;
 }
